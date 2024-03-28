@@ -16,7 +16,7 @@ the shebang to a python binary that you own. It can be just the standard
 using to have access to all the latest python features.
 
 An alternative method is making a symlink to your `/usr/local/bin` folder. Then
-you can use it like a command line tool. Assuming you're in the projec's
+you can use it like a command line tool. Assuming you're in the project's
 folder, you can do:
 
 ```bash
