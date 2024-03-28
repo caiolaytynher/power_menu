@@ -1,0 +1,26 @@
+@import "~/.config/rofi/config.rasi"
+
+window {
+  width: 25%;
+  padding: 10 5 10 10;
+}
+
+mainbox {
+  children: [listview];
+}
+
+listview {
+  columns: 3;
+  lines: 1;
+}
+
+element {
+  children: [element-text];
+  padding: 30;
+  margin: 0 5 0 0;
+}
+
+element-text {
+  font: "JetBrainsMono NF Bold 30";
+  horizontal-align: 0.34;
+}
