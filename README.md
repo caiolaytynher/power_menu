@@ -20,7 +20,7 @@ you can use it like a command line tool. Assuming you're in the projec's
 folder, you can do:
 
 ```bash
-$ sudo ln -s $PWD/main.py /usr/local/bin/poweroff
+sudo ln -s $PWD/main.py /usr/local/bin/poweroff
 ```
 
 I renamed it to poweroff so that you can just say `poweroff` at your terminal
