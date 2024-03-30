@@ -6,7 +6,7 @@ window {
 }
 
 mainbox {
-  children: [listview];
+  children: [prompt, listview];
 }
 
 listview {
@@ -22,6 +22,15 @@ element {
 }
 
 element-text {
-  font: "JetBrainsMono Nerd Font Bold 20";
+  font: "Roboto 20";
   horizontal-align: 0.5;
+}
+
+prompt {
+  enabled: true;
+  padding: 0 0 10 23;
+  background-color: @bg;
+  border-radius: 10;
+  margin: 0 5 0 0;
+  font: "Roboto 20";
 }

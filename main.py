@@ -9,9 +9,13 @@ WORKSPACE = Path(__file__).parent
 
 
 class PowerOffOpt(StrEnum):
-    SHUTDOWN = ""
-    REBOOT = ""
-    LOGOUT = ""
+    SHUTDOWN = "\uf011"
+    REBOOT = "\uf2ea"
+    LOCK = "\uf023"
+    LOGOUT = "\uf2f5"
+    SUSPEND = "\uf28b"
+    HIBERNATE = "\uf192"
+    UEFI = "\uf2db"
 
 
 def main() -> None:
@@ -50,13 +54,23 @@ def main() -> None:
     if confirm_opt == "No" or not confirm_opt:
         return
 
+    desktop_session = os.environ.get("DESKTOP_SESSION")
+
     match power_off_opt:
         case PowerOffOpt.SHUTDOWN:
             power_off_cmd = ["poweroff"]
+
         case PowerOffOpt.REBOOT:
             power_off_cmd = ["reboot"]
+
+        case PowerOffOpt.LOCK:
+            match desktop_session:
+                case "hyprland":
+                    power_off_cmd = ["swaylock"]
+                case _:
+                    return
+
         case PowerOffOpt.LOGOUT:
-            desktop_session = os.environ.get("DESKTOP_SESSION")
             match desktop_session:
                 case "hyprland":
                     power_off_cmd = ["hyprctl", "dispatch", "exit"]
@@ -64,6 +78,19 @@ def main() -> None:
                     power_off_cmd = ["qtile", "cmd-obj", "-o", "cmd", "-f", "shutdown"]
                 case _:
                     return
+
+        case PowerOffOpt.SUSPEND:
+            power_off_cmd = ["systemctl", "suspend"]
+
+        case PowerOffOpt.HIBERNATE:
+            power_off_cmd = ["systemctl", "hibernate"]
+
+        case PowerOffOpt.UEFI:
+            support_uefi = Path("/sys/firmware/efi").exists()
+            if not support_uefi:
+                return
+
+            power_off_cmd = ["systemctl", "reboot", "--firmware-setup"]
         case _:
             return
 
