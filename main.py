@@ -4,9 +4,11 @@ from enum import StrEnum
 from pathlib import Path
 
 WORKSPACE = Path(__file__).parent
+DESKTOP_SESSION = os.environ.get("DESKTOP_SESSION")
+ROFI = Path("/usr/bin/rofi")
 
 
-class PowerOffOpt(StrEnum):
+class Option(StrEnum):
     SHUTDOWN = "\uf011"
     REBOOT = "\uf2ea"
     LOCK = "\uf023"
@@ -16,29 +18,36 @@ class PowerOffOpt(StrEnum):
     UEFI = "\uf2db"
 
 
+def popup(msg: str) -> None:
+    popup_msg = subprocess.run([ROFI, "-e", msg], capture_output=True)
+    if popup_msg.stderr:
+        raise Exception("Failed to display popup.")
+
+
 def main() -> None:
-    power_off_cmd = subprocess.run(
+    power_menu = subprocess.run(
         [
-            "/usr/bin/rofi",
+            ROFI,
             "-dmenu",
             "-theme",
             WORKSPACE / "themes/power_off.rasi",
         ],
-        input="\n".join(list(PowerOffOpt)),
+        input="\n".join(list(Option)),
         encoding="utf-8",
         capture_output=True,
     )
 
-    if power_off_cmd.stderr:
+    if power_menu.stderr:
+        popup(f"Command {ROFI} failed: {power_menu.stderr}")
         return
 
-    power_off_opt = power_off_cmd.stdout.strip()
-    if not power_off_opt:
+    power_opt = power_menu.stdout.strip()
+    if not power_opt:
         return
 
     confirm_prompt = subprocess.run(
         [
-            "/usr/bin/rofi",
+            ROFI,
             "-dmenu",
             "-p",
             "Are you sure?",
@@ -51,53 +60,56 @@ def main() -> None:
     )
 
     if confirm_prompt.stderr:
+        popup(f"Command {ROFI} failed: {confirm_prompt.stderr}")
         return
 
     confirm_opt = confirm_prompt.stdout.strip()
-    if confirm_opt == "No" or not confirm_opt:
+    if confirm_opt != "Yes":
         return
 
-    desktop_session = os.environ.get("DESKTOP_SESSION")
+    match power_opt:
+        case Option.SHUTDOWN:
+            power_cmd = ["poweroff"]
 
-    match power_off_opt:
-        case PowerOffOpt.SHUTDOWN:
-            power_off_cmd = ["poweroff"]
+        case Option.REBOOT:
+            power_cmd = ["reboot"]
 
-        case PowerOffOpt.REBOOT:
-            power_off_cmd = ["reboot"]
-
-        case PowerOffOpt.LOCK:
-            match desktop_session:
+        case Option.LOCK:
+            match DESKTOP_SESSION:
                 case "hyprland":
-                    power_off_cmd = ["swaylock"]
+                    power_cmd = ["swaylock"]
                 case _:
                     return
 
-        case PowerOffOpt.LOGOUT:
-            match desktop_session:
+        case Option.LOGOUT:
+            match DESKTOP_SESSION:
                 case "hyprland":
-                    power_off_cmd = ["hyprctl", "dispatch", "exit"]
+                    power_cmd = ["hyprctl", "dispatch", "exit"]
                 case "qtile":
-                    power_off_cmd = ["qtile", "cmd-obj", "-o", "cmd", "-f", "shutdown"]
+                    power_cmd = ["qtile", "cmd-obj", "-o", "cmd", "-f", "shutdown"]
                 case _:
-                    return
+                    popup(f"Desktop session '{DESKTOP_SESSION}' not recognized.")
+                    raise NotImplementedError()
 
-        case PowerOffOpt.SUSPEND:
-            power_off_cmd = ["systemctl", "suspend"]
+        case Option.SUSPEND:
+            power_cmd = ["systemctl", "suspend"]
 
-        case PowerOffOpt.HIBERNATE:
-            power_off_cmd = ["systemctl", "hibernate"]
+        case Option.HIBERNATE:
+            power_cmd = ["systemctl", "hibernate"]
 
-        case PowerOffOpt.UEFI:
-            support_uefi = Path("/sys/firmware/efi").exists()
-            if not support_uefi:
+        case Option.UEFI:
+            supports_uefi = Path("/sys/firmware/efi").exists()
+            if not supports_uefi:
+                popup(f"The system does not support UEFI.")
                 return
 
-            power_off_cmd = ["systemctl", "reboot", "--firmware-setup"]
-        case _:
+            power_cmd = ["systemctl", "reboot", "--firmware-setup"]
+        case "":
             return
+        case _:
+            raise Exception("Unreachable")
 
-    subprocess.run(power_off_cmd)
+    subprocess.run(power_cmd)
 
 
 if __name__ == "__main__":
