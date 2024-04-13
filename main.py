@@ -30,7 +30,7 @@ def main() -> None:
             ROFI,
             "-dmenu",
             "-theme",
-            WORKSPACE / "themes/power_off.rasi",
+            WORKSPACE / "themes/power_menu.rasi",
         ],
         input="\n".join(list(Option)),
         encoding="utf-8",

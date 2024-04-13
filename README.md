@@ -1,33 +1,31 @@
-# Power Off
+# Power Menu
 
-A power off screen using rofi run prompt and python.
+A power menu using rofi run prompt and python. Naturally, only runs on Linux.
 
 ## Dependencies
 
 - Rofi
 - Python 3.11 or higher
-- Linux
 
-## How I integrated it
+## Integration
 
-I've just setup a keybinding to run the script, since it is executable. If
-you're planning to use it, you'll have to change the shebang to a python binary
-that you own. It could be just the standard `#!/usr/bin/python` by default, but
-I want to have more control over the version that I'm using to have access to
-all the latest python features, that's why I use a
-[pyenv](https://github.com/pyenv/pyenv) python binary.
+I've just setup a keybinding to run the script using the full path for the
+python executable and the full path for the main.py file.
 
-An alternative method is making a symlink to your `/usr/local/bin` folder. Then
-you can use it like a command line tool. Assuming you're in the project's
-folder, you can do:
+An alternative method is making the file executable by adding a shebang at the
+start of the file like `#!/usr/bin/python` and doing:
 
 ```bash
-sudo ln -s $PWD/main.py /usr/local/bin/poweroff
+chmod +x main.py
 ```
 
-I renamed it to poweroff so that you can just say `poweroff` at your terminal
-and execute the program.
+Then, you can create a symlink to your `/usr/local/bin` folder so you can use
+it like a command line tool. Assuming you're in the project's folder, you can
+do:
 
-## TODO
+```bash
+sudo ln -s $PWD/main.py /usr/local/bin/powermenu
+```
 
-- Add a logging system to see what block was executed to help debug any errors.
+I renamed it to powermenu without extension so that you can just say
+`powermenu` at your terminal and execute the program.
